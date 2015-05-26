@@ -224,64 +224,49 @@ def create_returns_from_list(returns, sim_params):
                      data=returns)
 
 
-def create_daily_trade_source(sids, trade_count, sim_params,
-                              concurrent=False):
+def create_daily_trade_source(sids, sim_params, concurrent=False):
     """
     creates trade_count trades for each sid in sids list.
     first trade will be on sim_params.period_start, and daily
     thereafter for each sid. Thus, two sids should result in two trades per
     day.
-
-    Important side-effect: sim_params.period_end will be modified
-    to match the day of the final trade.
     """
     return create_trade_source(
         sids,
-        trade_count,
         timedelta(days=1),
         sim_params,
         concurrent=concurrent
     )
 
 
-def create_minutely_trade_source(sids, trade_count, sim_params,
-                                 concurrent=False):
+def create_minutely_trade_source(sids, sim_params, concurrent=False):
     """
     creates trade_count trades for each sid in sids list.
     first trade will be on sim_params.period_start, and every minute
     thereafter for each sid. Thus, two sids should result in two trades per
     minute.
-
-    Important side-effect: sim_params.period_end will be modified
-    to match the day of the final trade.
     """
     return create_trade_source(
         sids,
-        trade_count,
         timedelta(minutes=1),
         sim_params,
         concurrent=concurrent
     )
 
 
-def create_trade_source(sids, trade_count,
-                        trade_time_increment, sim_params,
+def create_trade_source(sids, trade_time_increment, sim_params,
                         concurrent=False):
 
     args = tuple()
     kwargs = {
-        'count': trade_count,
         'sids': sids,
         'start': sim_params.first_open,
+        'end': sim_params.period_end,
         'delta': trade_time_increment,
         'filter': sids,
         'concurrent': concurrent
     }
     source = SpecificEquityTrades(*args, **kwargs)
-
-    # TODO: do we need to set the trading environment's end to same dt as
-    # the last trade in the history?
-    # sim_params.period_end = trade_history[-1].dt
 
     return source
 
